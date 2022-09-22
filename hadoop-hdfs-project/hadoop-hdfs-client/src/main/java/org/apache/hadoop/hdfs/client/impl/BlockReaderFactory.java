@@ -475,7 +475,9 @@ public class BlockReaderFactory implements ShortCircuitReplicaCreator {
               "giving up on BlockReaderLocal.", this, pathInfo);
       return null;
     }
+    LOG.info("===***==***===IN getBlockReaderLocal()_before_getShortCircuitCache()===========" ); 
     ShortCircuitCache cache = clientContext.getShortCircuitCache();
+    LOG.info("===***==***===IN getBlockReaderLocal()_after_getShortCircuitCache()===========" ); 
     ExtendedBlockId key = new ExtendedBlockId(block.getBlockId(),
         block.getBlockPoolId());
     ShortCircuitReplicaInfo info = cache.fetchOrCreate(key, this);

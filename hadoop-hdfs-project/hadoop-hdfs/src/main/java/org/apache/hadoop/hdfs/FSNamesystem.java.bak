@@ -3959,10 +3959,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
     long resourceCheckTime = monotonicNow();
     Preconditions.checkState(nnResourceChecker != null,
         "nnResourceChecker not initialized");
-    LOG.info("========IN FSNamesystem===========checkAvailableResources()"); 
     hasResourcesAvailable = nnResourceChecker.hasAvailableDiskSpace();
-    LOG.info("========IN FSNamesystem===========Test_hasResourcesAvailable :" + hasResourcesAvailable);
-    // LOG.info("========IN FSNamesystem===========Test_nnlowVolumes :" + nnResourceChecker.getVolumesLowOnSpace().size());
     resourceCheckTime = monotonicNow() - resourceCheckTime;
     NameNode.getNameNodeMetrics().addResourceCheckTime(resourceCheckTime);
   }

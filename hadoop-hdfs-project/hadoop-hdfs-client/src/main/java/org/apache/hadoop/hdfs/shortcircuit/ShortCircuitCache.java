@@ -37,6 +37,7 @@ import org.apache.commons.collections.map.LinkedMap;
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.hdfs.ExtendedBlockId;
+import org.apache.hadoop.hdfs.client.HdfsClientConfigKeys;
 import org.apache.hadoop.hdfs.client.impl.DfsClientConf.ShortCircuitConf;
 import org.apache.hadoop.hdfs.net.DomainPeer;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
@@ -103,7 +104,7 @@ public class ShortCircuitCache implements Closeable {
       try {
         if (ShortCircuitCache.this.closed) return;
         long curMs = Time.monotonicNow();
-
+        LOG.info("===***==***===IN ShortCircuitCache===========is RUNNING" ); 
         LOG.debug("{}: cache cleaner running at {}", this, curMs);
 
         int numDemoted = demoteOldEvictableMmaped(curMs);
@@ -325,6 +326,7 @@ public class ShortCircuitCache implements Closeable {
   private final DfsClientShmManager shmManager;
 
   public static ShortCircuitCache fromConf(ShortCircuitConf conf) {
+    LOG.info("===***==***===IN ShortCircuitCache_fromConf===========conf.getShortCircuitMmapCacheSize() :" + conf.getShortCircuitMmapCacheSize());
     return new ShortCircuitCache(
         conf.getShortCircuitStreamsCacheSize(),
         conf.getShortCircuitStreamsCacheExpiryMs(),
@@ -342,8 +344,16 @@ public class ShortCircuitCache implements Closeable {
     this.maxTotalSize = maxTotalSize;
     Preconditions.checkArgument(maxNonMmappedEvictableLifespanMs >= 0);
     this.maxNonMmappedEvictableLifespanMs = maxNonMmappedEvictableLifespanMs;
-    Preconditions.checkArgument(maxEvictableMmapedSize >= 0);
+    StackTraceElement stack[] = Thread.currentThread().getStackTrace();
+    for (int i = 0; i < stack.length; i++){
+      LOG.info(stack[i].getClassName()+" 。"+stack[i].getMethodName()+"-----");
+    }
+    LOG.info("===***==***===IN ShortCircuitCache===========before_Test_maxEvictableMmapedSize :" + maxEvictableMmapedSize);
+    Preconditions.checkArgument(maxEvictableMmapedSize >= 0,
+      "Invalid argument: " + HdfsClientConfigKeys.Mmap.CACHE_SIZE_KEY +
+      " must be greater than zero.");
     this.maxEvictableMmapedSize = maxEvictableMmapedSize;
+    LOG.info("===***==***===IN ShortCircuitCache===========After_Test_maxEvictableMmapedSize :" + maxEvictableMmapedSize);
     Preconditions.checkArgument(maxEvictableMmapedLifespanMs >= 0);
     this.maxEvictableMmapedLifespanMs = maxEvictableMmapedLifespanMs;
     this.mmapRetryTimeoutMs = mmapRetryTimeoutMs;
@@ -494,6 +504,8 @@ public class ShortCircuitCache implements Closeable {
       long evictionTimeMs =
           TimeUnit.MILLISECONDS.convert(evictionTimeNs, TimeUnit.NANOSECONDS);
       if (evictionTimeMs + maxEvictableMmapedLifespanMs >= now) {
+        LOG.info("===***==***===IN DFSClientConf_demoteOldEvictableMmaped()===========Test_maxEvictableMmapedSize :" + maxEvictableMmapedSize); 
+        LOG.info("===***==***===IN DFSClientConf_demoteOldEvictableMmaped()===========Test_evictableMmapped.size() :" + evictableMmapped.size());  
         if (evictableMmapped.size() < maxEvictableMmapedSize) {
           break;
         }
@@ -861,6 +873,7 @@ public class ShortCircuitCache implements Closeable {
       LOG.info(this + ": closing");
       maxNonMmappedEvictableLifespanMs = 0;
       maxEvictableMmapedSize = 0;
+      LOG.info("===***==***===IN DFSClientConf_close()_set_0===========Test_maxEvictableMmapedSize :" + maxEvictableMmapedSize); 
       // Close and join cacheCleaner thread.
       IOUtilsClient.cleanup(LOG, cacheCleaner);
       // Purge all replicas.

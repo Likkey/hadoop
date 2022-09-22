@@ -121,10 +121,12 @@ public class ClientContext {
   private ClientContext(String name, DfsClientConf conf,
       Configuration config) {
     final ShortCircuitConf scConf = conf.getShortCircuitConf();
-
+    LOG.info("===***==***===IN ClientContext_conf.getShortCircuitConf()_getShortCircuitMmapCacheSize:===========" + scConf.getShortCircuitMmapCacheSize());
     this.name = name;
     this.confString = scConf.confAsString();
+    LOG.info("===***==***===IN ClientContext_before_shortCircuitCache===========" ); 
     this.shortCircuitCache = ShortCircuitCache.fromConf(scConf);
+    LOG.info("===***==***===IN getBlockReaderLocal()_after_shortCircuitCache===========" ); 
     this.peerCache = new PeerCache(scConf.getSocketCacheCapacity(),
         scConf.getSocketCacheExpiry());
     this.keyProviderCache = new KeyProviderCache(

@@ -19,9 +19,6 @@ package org.apache.hadoop.hdfs.server.namenode;
 
 import java.util.Collection;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.apache.hadoop.classification.InterfaceAudience;
 
 /**
@@ -41,7 +38,6 @@ final class NameNodeResourcePolicy {
    * @return true if and only if there are sufficient NN resources to
    *         continue logging edits.
    */
-  private static final Log LOG = LogFactory.getLog(NameNodeResourcePolicy.class.getName());
   static boolean areResourcesAvailable(
       Collection<? extends CheckableNameNodeResource> resources,
       int minimumRedundantResources) {
@@ -50,7 +46,6 @@ final class NameNodeResourcePolicy {
     // - during startup, if there are no edits dirs on disk, then there is
     // a call to areResourcesAvailable() with no dirs at all, which was
     // previously causing the NN to enter safemode
-    LOG.info("========IN NameNodeResourcePolicy_areResourcesAvailable()_resources.isEmpty(): " + resources.isEmpty());
     if (resources.isEmpty()) {
       return true;
     }
@@ -59,11 +54,8 @@ final class NameNodeResourcePolicy {
     int redundantResourceCount = 0;
     int disabledRedundantResourceCount = 0;
     for (CheckableNameNodeResource resource : resources) {
-      LOG.info("=============IN NameNodeResourcePolicy_areResourcesAvailable()===========Test_CheckableNameNodeResource: " + resource);
-      LOG.info("========IN NameNodeResourcePolicy_areResourcesAvailable()===========resource.isRequired(): " + resource.isRequired());
       if (!resource.isRequired()) {
         redundantResourceCount++;
-        LOG.info("========IN NameNodeResourcePolicy_areResourcesAvailable()===========resource.isResourceAvailable(): " + resource.isResourceAvailable());
         if (!resource.isResourceAvailable()) {
           disabledRedundantResourceCount++;
         }
@@ -71,22 +63,16 @@ final class NameNodeResourcePolicy {
         requiredResourceCount++;
         if (!resource.isResourceAvailable()) {
           // Short circuit - a required resource is not available.
-          LOG.info("========IN NameNodeResourcePolicy_areResourcesAvailable()===========a required resource is not available,return false" );
           return false;
         }
       }
-      LOG.info("========IN NameNodeResourcePolicy_areResourcesAvailable()===========requiredResourceCount: " + requiredResourceCount + " redundantResourceCount: " + redundantResourceCount + " disabledRedundantResourceCount:" + disabledRedundantResourceCount);
     }
-    LOG.info("================IN NameNodeResourcePolicy_areResourcesAvailable()===========requiredResourceCount: " + requiredResourceCount + " redundantResourceCount: " + redundantResourceCount + " disabledRedundantResourceCount:" + disabledRedundantResourceCount);
-    LOG.info("================IN NameNodeResourcePolicy_areResourcesAvailable()_READY TO RETURN"); 
     
     if (redundantResourceCount == 0) {
       // If there are no redundant resources, return true if there are any
       // required resources available.
-      LOG.info("================IN NameNodeResourcePolicy_areResourcesAvailable()_RETURN_redundantResourceCount == 0 && requiredResourceCount > 0 :" + requiredResourceCount );  
       return requiredResourceCount > 0;
     } else {
-      LOG.info("================IN NameNodeResourcePolicy_areResourcesAvailable()_RETURN_redundantResourceCount != 0 ");
       return redundantResourceCount - disabledRedundantResourceCount >=
           minimumRedundantResources;
     }
